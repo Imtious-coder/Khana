@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Food Khana — AI Food Films</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=DM+Mono:wght@300;400&family=Libre+Baskerville:ital@1&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --ink: #0d0a07;
+    --cream: #f5f0e8;
+    --warm: #e8dcc8;
+    --gold: #c8922a;
+    --ember: #d45a2a;
+    --mist: #8a8070;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--ink);
+    color: var(--cream);
+    font-family: 'DM Mono', monospace;
+    overflow-x: hidden;
+  }
+
+  /* Hide custom cursor on touch devices */
+  @media (pointer: fine) {
+    body { cursor: none; }
+    .cursor, .cursor-ring { display: block; }
+  }
+  @media (pointer: coarse) {
+    .cursor, .cursor-ring { display: none; }
+  }
+
+  .cursor {
+    width: 10px; height: 10px;
+    background: var(--gold);
+    border-radius: 50%;
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    transform: translate(-50%, -50%);
+    transition: transform 0.1s, width 0.2s, height 0.2s;
+    mix-blend-mode: difference;
+  }
+  .cursor-ring {
+    width: 36px; height: 36px;
+    border: 1px solid rgba(200,146,42,0.5);
+    border-radius: 50%;
+    position: fixed;
+    pointer-events: none;
+    z-index: 9998;
+    transform: translate(-50%, -50%);
+    transition: left 0.12s ease-out, top 0.12s ease-out;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 1.5rem 3rem;
+    background: rgba(13,10,7,0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  .nav-logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem;
+    font-weight: 900;
+    letter-spacing: 0.15em;
+    color: var(--cream);
+    text-transform: uppercase;
+    display: flex; align-items: center; gap: 0.4rem;
+  }
+  .nav-logo .logo-dot { color: var(--gold); }
+  .nav-links {
+    display: flex; gap: 2.5rem; list-style: none;
+  }
+  .nav-links a {
+    color: var(--cream);
+    text-decoration: none;
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+  }
+  .nav-links a:hover { opacity: 1; }
+
+  /* Hamburger */
+  .nav-toggle {
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    cursor: pointer;
+    padding: 4px;
+    background: none; border: none;
+  }
+  .nav-toggle span {
+    display: block;
+    width: 24px; height: 1.5px;
+    background: var(--cream);
+    transition: transform 0.3s, opacity 0.3s;
+  }
+  .nav-toggle.open span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
+  .nav-toggle.open span:nth-child(2) { opacity: 0; }
+  .nav-toggle.open span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
+
+  /* Mobile nav drawer */
+  .nav-drawer {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    background: var(--ink);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    padding: 5rem 2rem 2rem;
+    z-index: 99;
+    flex-direction: column;
+    gap: 0;
+  }
+  .nav-drawer.open { display: flex; }
+  .nav-drawer a {
+    color: var(--cream);
+    text-decoration: none;
+    font-size: 0.75rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    padding: 1.2rem 0;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    opacity: 0.7;
+    transition: opacity 0.2s, color 0.2s;
+  }
+  .nav-drawer a:hover { opacity: 1; color: var(--gold); }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: grid;
+    grid-template-rows: 1fr auto;
+    padding: 8rem 3rem 3rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    pointer-events: none;
+    animation: drift 12s ease-in-out infinite;
+  }
+  .orb-1 {
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(200,146,42,0.18) 0%, transparent 70%);
+    top: -100px; right: -150px;
+  }
+  .orb-2 {
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(212,90,42,0.12) 0%, transparent 70%);
+    bottom: 100px; left: -100px;
+    animation-delay: -4s;
+  }
+  .orb-3 {
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(200,146,42,0.08) 0%, transparent 70%);
+    top: 40%; left: 40%;
+    animation-delay: -8s;
+  }
+  @keyframes drift {
+    0%, 100% { transform: translate(0,0) scale(1); }
+    33% { transform: translate(30px,-40px) scale(1.05); }
+    66% { transform: translate(-20px,20px) scale(0.97); }
+  }
+
+  .hero::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 1; opacity: 0.5;
+  }
+
+  .hero-content { position: relative; z-index: 2; align-self: center; }
+
+  .hero-eyebrow {
+    font-size: 0.6rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 2rem;
+    display: flex; align-items: center; gap: 1rem;
+    animation: fadeUp 1s ease both;
+  }
+  .hero-eyebrow::before {
+    content: '';
+    display: block; width: 40px; height: 1px;
+    background: var(--gold);
+    flex-shrink: 0;
+  }
+
+  .hero-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(3rem, 8vw, 9rem);
+    font-weight: 900;
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+    max-width: 14ch;
+  }
+  .hero-title .line { display: block; overflow: hidden; }
+  .hero-title .line span {
+    display: block;
+    animation: slideUp 0.9s cubic-bezier(0.16,1,0.3,1) both;
+  }
+  .hero-title .line:nth-child(1) span { animation-delay: 0.1s; }
+  .hero-title .line:nth-child(2) span { animation-delay: 0.2s; }
+  .hero-title .line:nth-child(3) span { animation-delay: 0.3s; }
+  .hero-title .italic { font-style: italic; color: var(--gold); }
+
+  .hero-sub {
+    margin-top: 2.5rem;
+    max-width: 38ch;
+    font-size: 0.75rem;
+    line-height: 1.9;
+    color: var(--mist);
+    letter-spacing: 0.04em;
+    animation: fadeUp 1s ease 0.6s both;
+  }
+
+  .hero-cta {
+    margin-top: 3rem;
+    display: flex; gap: 1.5rem; align-items: center;
+    flex-wrap: wrap;
+    animation: fadeUp 1s ease 0.8s both;
+  }
+
+  .btn-primary {
+    display: inline-block;
+    padding: 1rem 2.5rem;
+    background: var(--gold);
+    color: var(--ink);
+    text-decoration: none;
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    font-weight: 400;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s;
+    white-space: nowrap;
+  }
+  .btn-primary::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: var(--ember);
+    transform: translateX(-101%);
+    transition: transform 0.35s cubic-bezier(0.16,1,0.3,1);
+  }
+  .btn-primary:hover::after { transform: translateX(0); }
+  .btn-primary span { position: relative; z-index: 1; }
+
+  .btn-ghost {
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--mist);
+    text-decoration: none;
+    border-bottom: 1px solid var(--mist);
+    padding-bottom: 2px;
+    transition: color 0.2s, border-color 0.2s;
+    white-space: nowrap;
+  }
+  .btn-ghost:hover { color: var(--cream); border-color: var(--cream); }
+
+  .hero-bottom {
+    position: relative; z-index: 2;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    padding-top: 1.5rem;
+    overflow: hidden;
+    animation: fadeUp 1s ease 1s both;
+  }
+  .ticker-track {
+    display: flex; gap: 4rem;
+    animation: ticker 30s linear infinite;
+    white-space: nowrap;
+  }
+  .ticker-track span {
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--mist);
+    flex-shrink: 0;
+  }
+  .ticker-track .dot { color: var(--gold); }
+  @keyframes ticker {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  /* ── STATS ── */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    border-top: 1px solid rgba(255,255,255,0.08);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .stat {
+    padding: 2.5rem 3rem;
+    border-right: 1px solid rgba(255,255,255,0.08);
+  }
+  .stat:last-child { border-right: none; }
+  .stat-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.8rem;
+    font-weight: 700;
+    color: var(--cream);
+    line-height: 1;
+  }
+  .stat-num em { font-style: italic; color: var(--gold); }
+  .stat-label {
+    margin-top: 0.5rem;
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--mist);
+  }
+
+  /* ── SECTIONS ── */
+  .section { padding: 6rem 3rem; }
+
+  .section-tag {
+    font-size: 0.6rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 1rem;
+    display: flex; align-items: center; gap: 1rem;
+  }
+  .section-tag::before {
+    content: '';
+    display: block; width: 30px; height: 1px;
+    background: var(--gold);
+    flex-shrink: 0;
+  }
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.8rem, 3.5vw, 3.5rem);
+    font-weight: 700;
+    line-height: 1.1;
+    max-width: 20ch;
+  }
+  .section-title em { font-style: italic; color: var(--gold); }
+
+  /* ── PROCESS ── */
+  .process {
+    margin-top: 5rem;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+  .process-step {
+    padding: 3rem;
+    border-right: 1px solid rgba(255,255,255,0.08);
+    position: relative;
+    transition: background 0.3s;
+  }
+  .process-step:last-child { border-right: none; }
+  .process-step:hover { background: rgba(200,146,42,0.04); }
+  .step-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 4rem;
+    font-weight: 900;
+    color: rgba(255,255,255,0.06);
+    line-height: 1;
+    margin-bottom: 1.5rem;
+  }
+  .step-icon { font-size: 1.5rem; margin-bottom: 1rem; }
+  .step-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: var(--cream);
+  }
+  .step-desc {
+    font-size: 0.7rem;
+    line-height: 1.9;
+    color: var(--mist);
+  }
+
+  /* ── VIDEO REEL ── */
+  .reel { padding: 0 3rem 6rem; }
+  .reel-header {
+    display: flex; justify-content: space-between; align-items: flex-end;
+    margin-bottom: 3rem;
+    gap: 1rem;
+  }
+  .reel-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.5rem, 3vw, 2.8rem);
+    font-weight: 700;
+  }
+  .reel-title em { font-style: italic; color: var(--gold); }
+  .reel-link {
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--mist);
+    text-decoration: none;
+    border-bottom: 1px solid rgba(138,128,112,0.4);
+    padding-bottom: 2px;
+    transition: color 0.2s;
+    white-space: nowrap;
+  }
+  .reel-link:hover { color: var(--gold); }
+
+  .video-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 12px;
+  }
+  .video-card {
+    background: #1a1510;
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+  }
+  .video-card.large { grid-row: span 2; }
+
+  .thumb-fake {
+    width: 100%; aspect-ratio: 16/9;
+    position: relative; overflow: hidden;
+    transition: transform 0.5s ease;
+  }
+  .video-card.large .thumb-fake {
+    aspect-ratio: unset; height: 100%; min-height: 300px;
+  }
+  .video-card:hover .thumb-fake { transform: scale(1.04); }
+
+  .tf-bg { position: absolute; inset: 0; }
+  .tf-1 { background: linear-gradient(135deg,#3d1f0d 0%,#8b4513 40%,#c8922a 100%); }
+  .tf-2 { background: linear-gradient(135deg,#1a2a1a 0%,#2d5a27 50%,#6b8f3a 100%); }
+  .tf-3 { background: linear-gradient(135deg,#2a1a1a 0%,#6b2d1a 50%,#d45a2a 100%); }
+  .tf-4 { background: linear-gradient(135deg,#1a1a2a 0%,#2d3060 50%,#5a4f8a 100%); }
+  .tf-5 { background: linear-gradient(135deg,#2a2010 0%,#6b5020 50%,#c89030 100%); }
+
+  .food-shape {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 4rem; opacity: 0.3;
+  }
+  .video-card.large .food-shape { font-size: 7rem; }
+
+  .play-btn {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; transition: opacity 0.3s;
+  }
+  .video-card:hover .play-btn { opacity: 1; }
+  .play-circle {
+    width: 48px; height: 48px;
+    border: 1px solid rgba(255,255,255,0.8);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    backdrop-filter: blur(4px);
+    background: rgba(0,0,0,0.3);
+  }
+  .play-tri {
+    width: 0; height: 0;
+    border-style: solid;
+    border-width: 7px 0 7px 14px;
+    border-color: transparent transparent transparent white;
+    margin-left: 3px;
+  }
+  .video-meta { padding: 1rem 1.2rem; }
+  .video-meta-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--cream);
+    margin-bottom: 0.3rem;
+  }
+  .video-meta-sub {
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--mist);
+  }
+
+  /* ── FEATURES ── */
+  .features-grid {
+    margin-top: 5rem;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2px;
+    background: rgba(255,255,255,0.05);
+  }
+  .feature {
+    background: var(--ink);
+    padding: 3rem;
+    transition: background 0.3s;
+  }
+  .feature:hover { background: #120f0a; }
+  .feature-icon { font-size: 1.5rem; margin-bottom: 1.5rem; }
+  .feature-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem; font-weight: 700;
+    margin-bottom: 0.8rem; color: var(--cream);
+  }
+  .feature-desc { font-size: 0.7rem; line-height: 1.9; color: var(--mist); }
+
+  /* ── TESTIMONIALS ── */
+  .testimonials { padding: 6rem 3rem; background: #0a0806; }
+  .testimonials-grid {
+    margin-top: 4rem;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+  }
+  .testimonial {
+    padding: 2.5rem;
+    border: 1px solid rgba(255,255,255,0.07);
+    transition: border-color 0.3s;
+  }
+  .testimonial:hover { border-color: rgba(200,146,42,0.3); }
+  .quote-mark {
+    font-family: 'Playfair Display', serif;
+    font-size: 3rem; line-height: 0.5;
+    color: var(--gold); opacity: 0.5;
+    margin-bottom: 1.5rem;
+    display: block;
+  }
+  .quote-text {
+    font-family: 'Libre Baskerville', serif;
+    font-size: 0.85rem; line-height: 1.8;
+    font-style: italic; color: var(--warm);
+    margin-bottom: 2rem;
+  }
+  .quote-author {
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--mist);
+  }
+  .quote-author strong {
+    color: var(--cream);
+    display: block;
+    margin-bottom: 0.2rem;
+    letter-spacing: 0.1em;
+  }
+
+  /* ── CTA ── */
+  .cta-section {
+    padding: 10rem 3rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .cta-bg {
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 50%, rgba(200,146,42,0.1) 0%, transparent 70%);
+    animation: pulse 4s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%,100% { opacity: 0.6; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.1); }
+  }
+  .cta-content { position: relative; z-index: 1; }
+  .cta-label {
+    font-size: 0.6rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 2rem;
+    display: block;
+  }
+  .cta-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 5vw, 5rem);
+    font-weight: 900;
+    line-height: 1.05;
+    margin-bottom: 2rem;
+  }
+  .cta-title em { font-style: italic; color: var(--gold); }
+  .cta-sub {
+    font-size: 0.75rem;
+    color: var(--mist);
+    letter-spacing: 0.05em;
+    margin-bottom: 3rem;
+    max-width: 40ch;
+    margin-left: auto; margin-right: auto;
+    line-height: 1.8;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    padding: 2.5rem 3rem;
+    border-top: 1px solid rgba(255,255,255,0.07);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  .footer-logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    font-weight: 900;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+  .footer-copy {
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    color: var(--mist);
+  }
+  .footer-links {
+    display: flex; gap: 2rem; list-style: none;
+    flex-wrap: wrap;
+  }
+  .footer-links a {
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--mist);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .footer-links a:hover { color: var(--gold); }
+
+  /* ── SCROLL REVEAL ── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+  }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+  .reveal-delay-1 { transition-delay: 0.1s; }
+  .reveal-delay-2 { transition-delay: 0.2s; }
+  .reveal-delay-3 { transition-delay: 0.3s; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes slideUp {
+    from { transform: translateY(105%); }
+    to { transform: translateY(0); }
+  }
+
+  /* ══════════════════════════════
+     RESPONSIVE BREAKPOINTS
+  ══════════════════════════════ */
+
+  /* Tablet — 900px and below */
+  @media (max-width: 900px) {
+    nav { padding: 1.2rem 1.5rem; }
+    .nav-links { display: none; }
+    .nav-toggle { display: flex; }
+
+    .hero { padding: 7rem 1.5rem 2.5rem; }
+
+    .stats {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .stat {
+      padding: 2rem 1.5rem;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .stat:nth-child(2) { border-right: none; }
+    .stat:nth-child(3) { border-bottom: none; }
+    .stat:nth-child(4) { border-right: none; border-bottom: none; }
+
+    .section { padding: 5rem 1.5rem; }
+
+    .process { grid-template-columns: 1fr; }
+    .process-step {
+      border-right: none;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .process-step:last-child { border-bottom: none; }
+
+    .reel { padding: 0 1.5rem 5rem; }
+    .video-grid {
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: auto;
+    }
+    .video-card.large {
+      grid-column: span 2;
+      grid-row: span 1;
+    }
+    .video-card.large .thumb-fake {
+      aspect-ratio: 16/9;
+      height: auto;
+      min-height: unset;
+    }
+    .video-card.large .food-shape { font-size: 4rem; }
+
+    .features-grid { grid-template-columns: 1fr; }
+    .feature { padding: 2rem 1.5rem; }
+
+    .testimonials { padding: 5rem 1.5rem; }
+    .testimonials-grid { grid-template-columns: 1fr; gap: 1rem; }
+
+    .cta-section { padding: 6rem 1.5rem; }
+
+    footer { padding: 2rem 1.5rem; }
+  }
+
+  /* Mobile — 600px and below */
+  @media (max-width: 600px) {
+    .hero { padding: 6.5rem 1.2rem 2rem; }
+    .hero-eyebrow { font-size: 0.55rem; }
+
+    .stats { grid-template-columns: 1fr 1fr; }
+    .stat { padding: 1.5rem 1.2rem; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .stat:nth-child(odd) { border-right: 1px solid rgba(255,255,255,0.08); }
+    .stat:nth-child(3), .stat:nth-child(4) { border-bottom: none; }
+    .stat-num { font-size: 2rem; }
+
+    .section { padding: 4rem 1.2rem; }
+    .section-title { font-size: clamp(1.6rem, 6vw, 2.2rem); }
+
+    .process-step { padding: 2rem 1.2rem; }
+    .step-num { font-size: 3rem; }
+    .step-title { font-size: 1.1rem; }
+
+    .reel { padding: 0 1.2rem 4rem; }
+    .reel-header { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+    .video-grid { grid-template-columns: 1fr; }
+    .video-card.large { grid-column: span 1; }
+    .video-card.large .food-shape { font-size: 3rem; }
+
+    .testimonial { padding: 1.8rem 1.2rem; }
+    .quote-text { font-size: 0.8rem; }
+
+    .cta-section { padding: 5rem 1.2rem; }
+    .cta-sub { max-width: 100%; }
+
+    footer {
+      flex-direction: column;
+      align-items: flex-start;
+      padding: 2rem 1.2rem;
+      gap: 1.2rem;
+    }
+    .footer-links { gap: 1.2rem; }
+  }
+
+  /* Very small — 380px and below */
+  @media (max-width: 380px) {
+    .hero-title { font-size: clamp(2.4rem, 11vw, 3.5rem); }
+    .hero-cta { flex-direction: column; align-items: flex-start; gap: 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">Food<span class="logo-dot"> ✦ </span>Khana</div>
+  <ul class="nav-links">
+    <li><a href="#work">Work</a></li>
+    <li><a href="#process">Process</a></li>
+    <li><a href="#features">Features</a></li>
+    <li><a href="#cta">Start</a></li>
+  </ul>
+  <button class="nav-toggle" id="navToggle" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- MOBILE DRAWER -->
+<div class="nav-drawer" id="navDrawer">
+  <a href="#work" onclick="closeDrawer()">Work</a>
+  <a href="#process" onclick="closeDrawer()">Process</a>
+  <a href="#features" onclick="closeDrawer()">Features</a>
+  <a href="#cta" onclick="closeDrawer()">Start</a>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+
+  <div class="hero-content">
+    <div class="hero-eyebrow">AI-Powered Food Content</div>
+    <h1 class="hero-title">
+      <span class="line"><span>Food</span></span>
+      <span class="line"><span>Stories,</span></span>
+      <span class="line"><span class="italic">Told Beautifully.</span></span>
+    </h1>
+    <p class="hero-sub">
+      Food Khana blends cinematic technique with generative AI to create food videos that stop the scroll, stir the appetite, and build brands people fall in love with.
+    </p>
+    <div class="hero-cta">
+      <a href="#cta" class="btn-primary"><span>See a demo</span></a>
+      <a href="#work" class="btn-ghost">View our reel</a>
+    </div>
+  </div>
+
+  <div class="hero-bottom">
+    <div class="ticker-track">
+      <span>Recipe Films</span><span class="dot">✦</span>
+      <span>Restaurant Promos</span><span class="dot">✦</span>
+      <span>Social Content</span><span class="dot">✦</span>
+      <span>Brand Storytelling</span><span class="dot">✦</span>
+      <span>Product Launch Films</span><span class="dot">✦</span>
+      <span>AI-Assisted Editing</span><span class="dot">✦</span>
+      <span>Script Generation</span><span class="dot">✦</span>
+      <span>Recipe Films</span><span class="dot">✦</span>
+      <span>Restaurant Promos</span><span class="dot">✦</span>
+      <span>Social Content</span><span class="dot">✦</span>
+      <span>Brand Storytelling</span><span class="dot">✦</span>
+      <span>Product Launch Films</span><span class="dot">✦</span>
+      <span>AI-Assisted Editing</span><span class="dot">✦</span>
+      <span>Script Generation</span><span class="dot">✦</span>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats">
+  <div class="stat reveal">
+    <div class="stat-num">2.4<em>B</em></div>
+    <div class="stat-label">Views delivered for clients</div>
+  </div>
+  <div class="stat reveal reveal-delay-1">
+    <div class="stat-num">180<em>+</em></div>
+    <div class="stat-label">Brands we've filmed for</div>
+  </div>
+  <div class="stat reveal reveal-delay-2">
+    <div class="stat-num">72<em>h</em></div>
+    <div class="stat-label">Average delivery time</div>
+  </div>
+  <div class="stat reveal reveal-delay-3">
+    <div class="stat-num">8<em>×</em></div>
+    <div class="stat-label">Faster than traditional production</div>
+  </div>
+</div>
+
+<!-- PROCESS -->
+<section class="section" id="process">
+  <div class="section-tag">How it works</div>
+  <h2 class="section-title reveal">From brief to beautiful, <em>in days.</em></h2>
+
+  <div class="process reveal">
+    <div class="process-step">
+      <div class="step-num">01</div>
+      <div class="step-icon">🧠</div>
+      <div class="step-title">You brief us</div>
+      <div class="step-desc">Share your dish, brand tone, and goals. Our AI immediately generates a full creative concept — script, shot list, music mood, colour grading direction.</div>
+    </div>
+    <div class="process-step">
+      <div class="step-num">02</div>
+      <div class="step-icon">🎬</div>
+      <div class="step-title">We shoot &amp; generate</div>
+      <div class="step-desc">Our food cinematographers capture the real thing. AI handles b-roll enhancement, motion graphics, pacing, and adaptive captioning — simultaneously.</div>
+    </div>
+    <div class="process-step">
+      <div class="step-num">03</div>
+      <div class="step-icon">✨</div>
+      <div class="step-title">You publish &amp; scale</div>
+      <div class="step-desc">Receive platform-ready cuts for Instagram, TikTok, YouTube, and digital ads. Iterate endlessly without re-shooting. One brief, infinite formats.</div>
+    </div>
+  </div>
+</section>
+
+<!-- VIDEO REEL -->
+<section class="reel" id="work">
+  <div class="reel-header reveal">
+    <h2 class="reel-title">Recent <em>productions</em></h2>
+    <a href="#" class="reel-link">Full portfolio →</a>
+  </div>
+
+  <div class="video-grid reveal">
+    <div class="video-card large">
+      <div class="thumb-fake">
+        <div class="tf-bg tf-1"></div>
+        <div class="food-shape">🍜</div>
+        <div class="play-btn"><div class="play-circle"><div class="play-tri"></div></div></div>
+      </div>
+      <div class="video-meta">
+        <div class="video-meta-title">Nobu × AI — Umami Origins</div>
+        <div class="video-meta-sub">Restaurant campaign · 3.2M views</div>
+      </div>
+    </div>
+    <div class="video-card">
+      <div class="thumb-fake">
+        <div class="tf-bg tf-2"></div>
+        <div class="food-shape" style="font-size:2.5rem">🥗</div>
+        <div class="play-btn"><div class="play-circle"><div class="play-tri"></div></div></div>
+      </div>
+      <div class="video-meta">
+        <div class="video-meta-title">Bloom Salads — Launch</div>
+        <div class="video-meta-sub">Product · 1.1M views</div>
+      </div>
+    </div>
+    <div class="video-card">
+      <div class="thumb-fake">
+        <div class="tf-bg tf-3"></div>
+        <div class="food-shape" style="font-size:2.5rem">🌮</div>
+        <div class="play-btn"><div class="play-circle"><div class="play-tri"></div></div></div>
+      </div>
+      <div class="video-meta">
+        <div class="video-meta-title">Fuego Taqueria — Story</div>
+        <div class="video-meta-sub">Brand film · 880K views</div>
+      </div>
+    </div>
+    <div class="video-card">
+      <div class="thumb-fake">
+        <div class="tf-bg tf-4"></div>
+        <div class="food-shape" style="font-size:2.5rem">🍣</div>
+        <div class="play-btn"><div class="play-circle"><div class="play-tri"></div></div></div>
+      </div>
+      <div class="video-meta">
+        <div class="video-meta-title">Hana Omakase — Ritual</div>
+        <div class="video-meta-sub">Social series · 2.4M views</div>
+      </div>
+    </div>
+    <div class="video-card">
+      <div class="thumb-fake">
+        <div class="tf-bg tf-5"></div>
+        <div class="food-shape" style="font-size:2.5rem">🧁</div>
+        <div class="play-btn"><div class="play-circle"><div class="play-tri"></div></div></div>
+      </div>
+      <div class="video-meta">
+        <div class="video-meta-title">Miel Patisserie — TikTok</div>
+        <div class="video-meta-sub">Social content · 5.6M views</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="section" id="features">
+  <div class="section-tag">Capabilities</div>
+  <h2 class="section-title reveal">Everything a food brand <em>needs to shine.</em></h2>
+
+  <div class="features-grid reveal">
+    <div class="feature">
+      <div class="feature-icon">✍️</div>
+      <div class="feature-title">AI scriptwriting</div>
+      <div class="feature-desc">Describe your dish or concept — our model generates evocative, conversion-tested scripts tailored to your brand voice and platform.</div>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">🎞</div>
+      <div class="feature-title">Cinematic AI grading</div>
+      <div class="feature-desc">Every frame is colour-graded using models trained on award-winning food photography. Steam, texture, gloss — always optimised.</div>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">🔁</div>
+      <div class="feature-title">Infinite format generation</div>
+      <div class="feature-desc">One shoot becomes 9:16, 1:1, 16:9, vertical stories, loop edits, long-form and 15-second cuts — automatically resized and re-paced.</div>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">🎵</div>
+      <div class="feature-title">Adaptive soundtrack</div>
+      <div class="feature-desc">Original, royalty-free music generated to match your brand mood — kitchen jazz, ASMR, cinematic orchestral, lo-fi. No licensing headaches.</div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="testimonials">
+  <div class="section-tag">What clients say</div>
+  <h2 class="section-title reveal">Words from the <em>table.</em></h2>
+
+  <div class="testimonials-grid">
+    <div class="testimonial reveal">
+      <span class="quote-mark">"</span>
+      <p class="quote-text">We went from a 6-week production cycle to 4 days. The content performs better than anything we've ever made in-house.</p>
+      <div class="quote-author"><strong>Yuki Tanaka</strong>Marketing Director, Hana Omakase</div>
+    </div>
+    <div class="testimonial reveal reveal-delay-1">
+      <span class="quote-mark">"</span>
+      <p class="quote-text">The AI understood our brand voice immediately. Every video feels like us — warmer and more human than we expected from a tech-first studio.</p>
+      <div class="quote-author"><strong>Clara Ortiz</strong>Founder, Bloom Salads</div>
+    </div>
+    <div class="testimonial reveal reveal-delay-2">
+      <span class="quote-mark">"</span>
+      <p class="quote-text">5.6 million views on a single TikTok series. Food Khana didn't just make content — they made our brand go viral.</p>
+      <div class="quote-author"><strong>Léa Fontaine</strong>Brand Lead, Miel Patisserie</div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section" id="cta">
+  <div class="cta-bg"></div>
+  <div class="cta-content">
+    <span class="cta-label">Ready to start</span>
+    <h2 class="cta-title">Your food deserves<br><em>to be seen.</em></h2>
+    <p class="cta-sub">Book a 20-minute demo and we'll show you exactly what Food Khana can make for your brand — for free.</p>
+    <a href="#" class="btn-primary" style="font-size:0.7rem; padding:1.1rem 3rem;"><span>Book a free demo →</span></a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Food ✦ Khana</div>
+  <p class="footer-copy">© 2025 Food Khana. All rights reserved.</p>
+  <ul class="footer-links">
+    <li><a href="#">Instagram</a></li>
+    <li><a href="#">TikTok</a></li>
+    <li><a href="#">LinkedIn</a></li>
+    <li><a href="#">Contact</a></li>
+  </ul>
+</footer>
+
+<script>
+  // Custom cursor (desktop only)
+  const cursor = document.getElementById('cursor');
+  const ring = document.getElementById('cursorRing');
+  document.addEventListener('mousemove', e => {
+    cursor.style.left = e.clientX + 'px';
+    cursor.style.top = e.clientY + 'px';
+    ring.style.left = e.clientX + 'px';
+    ring.style.top = e.clientY + 'px';
+  });
+
+  // Mobile nav toggle
+  const toggle = document.getElementById('navToggle');
+  const drawer = document.getElementById('navDrawer');
+  toggle.addEventListener('click', () => {
+    const open = drawer.classList.toggle('open');
+    toggle.classList.toggle('open', open);
+  });
+  function closeDrawer() {
+    drawer.classList.remove('open');
+    toggle.classList.remove('open');
+  }
+
+  // Scroll reveal
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) e.target.classList.add('visible');
+    });
+  }, { threshold: 0.1 });
+  reveals.forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
